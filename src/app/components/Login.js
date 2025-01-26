@@ -1,8 +1,9 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import FacebookOutlinedIcon from "@mui/icons-material/FacebookOutlined";
 import GoogleIcon from "@mui/icons-material/Google";
+import { loginUser } from "../API/api";
 import {
   Box,
   TextField,
@@ -12,7 +13,36 @@ import {
   FormControlLabel,
   Link,
 } from "@mui/material";
+import { toast } from "react-toastify";
 const Login = () => {
+  const [userDetails, setUserDetails] = useState();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const handleLogin = async () => {
+    debugger;
+    try {
+      const { status, data } = await loginUser(formData);
+      if (data.status === 200) {
+        toast.success("user LoggedIN");
+        localStorage.setItem("Token", JSON.stringify(data.authToken));
+        localStorage.setItem("userDetails", JSON.stringify(data.userDetails));
+        console.log(data);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+  const handleFormData = (e) => {
+    e.preventDefault();
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
   return (
     <div>
       <Box
@@ -51,14 +81,20 @@ const Login = () => {
               label="Email or Phone Number"
               variant="outlined"
               fullWidth
+              name="email"
               margin="normal"
+              value={formData.email}
+              onChange={handleFormData}
             />
             <TextField
               label="Password"
               variant="outlined"
+              name="password"
               type="password"
               fullWidth
               margin="normal"
+              value={formData.password}
+              onChange={handleFormData}
             />
 
             <FormControlLabel
@@ -78,6 +114,7 @@ const Login = () => {
               color="primary"
               fullWidth
               size="medium"
+              onClick={handleLogin}
               sx={{
                 marginY: 2,
                 borderRadius: 5,
